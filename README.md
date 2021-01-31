@@ -1,3 +1,5 @@
 # bbproxmox
+Whmcs Proxmox server module
 
-Whmcs Proxmox module, i lost my orignal code so now remaking it.... so some things may work some not, if you see some thing you can help be my guest.
+
+i lost my orginal code for this and now starting over, lacking time to redevelope this it is going to be a long term project i'm gona tinker with, somethings may work some not.
