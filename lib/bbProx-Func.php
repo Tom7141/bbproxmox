@@ -9,20 +9,17 @@ function bbproxmox_CreateVM(array $params)
 	// well seems theres some diffrent types to deal with so lets start with that eh
 	$serverip = $params["serverip"];
 	$realm = $params["realm"];
-    $serverusername = $params["serverusername"];
-    $serverpassword = $params["serverpassword"];
-    $vmid = $params['vmid'];
+	$serverusername = $params["serverusername"];
+	$serverpassword = $params["serverpassword"];
+	$vmid = $params['vmid'];
 	$vmtype = $params['vmtype'];
 	$state = $params['state'];
-    if (!$serverip) { return "Error No server ip given to connect to server to issuse command!..."; }
+	if (!$serverip) { return "Error No server ip given to connect to server to issuse command!..."; }
 	if (!$serverusername) { return "Error No server username given to connect to server to issuse command!..."; }
 	if (!$serverpassword) { return "Error No server password given to connect to server to issuse command!..."; }
-
-    if (!$vmtype) { return "Error no vmtype given!..."; }
+	if (!$vmtype) { return "Error no vmtype given!..."; }
 	if (!$state) { return "Error state command not given"; }
-
-	
-		try {
+	try {
 			$pve2 = new PVE2_API($serverip, $serverusername, $realm, $serverpassword);
 			if ($pve2->login()) {
 				if (!$vmid) { 
@@ -54,7 +51,7 @@ function bbproxmox_CreateVM(array $params)
 	
 			if ($vmtype == "lxc") {
 
-					# Create a VZ container on the server node in the cluster.
+					# Create a LXC container on the server node in the cluster.
 				// todo add input processing here
 				$new_container_settings = array();
 				$new_container_settings['ostemplate'] = "local:vztmpl/debian-6.0-standard_6.0-4_amd64.tar.gz";
@@ -107,9 +104,9 @@ function bbproxmox_ChState(array $params)
     	if (!$serverip) { return "Error No server ip given to connect to server to issuse command!..."; }
 	if (!$serverusername) { return "Error No server username given to connect to server to issuse command!..."; }
 	if (!$serverpassword) { return "Error No server password given to connect to server to issuse command!..."; }
-  	if (!$vmid) { return "Error No customer vps VM number given!..."; }
-   	if (!$vmtype) { return "Error no vmtype given!..."; }
-	if (!$state) { return "Error state command not given"; }
+  	if (!$vmid) { return "ERROR vmid $NULL!..."; }
+   	if (!$vmtype) { return "ERROR vmtype $NULL!..."; }
+	if (!$state) { return "ERROR STATE PARAM $NULL"; }
     	try {
         	$pve2 = new PVE2_API($serverip, $serverusername, $realm, $serverpassword);
 		if ($pve2->login()) {
@@ -121,8 +118,58 @@ function bbproxmox_ChState(array $params)
 
 			//  UPID:server5:00000B99:04D3599B:56F880D5:vzstart:1001:root@pam:
 			if ($responce) { return 'success'; }
-			else { return "ERROR blank response bad vmid or vm allready is"; }
+			else { return "ERROR (blank response) invalid vmid or VM is allready ".$state; }
 		} else { return "Login to Proxmox Host failed. (Bad host/user/pass?)\n"; }
+	} catch (Exception $e) {
+        // Record the error in WHMCS's module log.
+        logModuleCall(
+            'provisioningmodule',
+            __FUNCTION__,
+            $params,
+            $e->getMessage(),
+            $e->getTraceAsString()
+        );
+        $success = false;
+        $errorMsg = $e->getMessage();
+		return $errorMsg;
+    }
+	return "ERROR end of line?";
+};
+
+function bbproxmox_ReadState(array $params)
+{
+//	$arraydata = implode(',',$params);
+//	error_log("----------------------------!!!!! $arraydata !!!!!!!!");
+	$serverip = $params["serverip"];
+	$realm = $params["realm"];
+	$serverusername = $params["serverusername"];
+	$serverpassword = $params["serverpassword"];
+	$vmid = $params['vmid'];
+	$vmtype = $params['vmtype'];
+	$state = $params['state'];
+    	if (!$serverip) { return "Error No server ip given to connect to server to issuse command!..."; }
+	if (!$serverusername) { return "Error No server username given to connect to server to issuse command!..."; }
+	if (!$serverpassword) { return "Error No server password given to connect to server to issuse command!..."; }
+  	if (!$vmid) { return "Error No customer vps VM number given!..."; }
+   	if (!$vmtype) { return "Error no vmtype given!..."; }
+	if (!$state) { return "Error state command not given"; }
+    	try {
+        	$pve2 = new PVE2_API($serverip, $serverusername, $realm, $serverpassword);
+		if ($pve2->login()) {
+		$this_nodes1 = $pve2->get("/nodes");
+		$this_nodes2 = $this_nodes1['0'];
+         	$this_node = $this_nodes2['node'];
+		$responce = $pve2->get("/nodes/".$this_node."/".$vmtype."/".$vmid."/status/".$state,$null);
+		if ($responce) { return $responce; }
+		else { return "ERROR blank response bad vmid or vm allready is"; }
+		logModuleCall(
+	            'provisioningmodule',
+        	    __FUNCTION__,
+	            $params,
+        	    $responce,
+		$null
+		);
+		} else { return "ERROR Login to Proxmox Host failed. (Bad host/user/pass?)\n"; }
 	} catch (Exception $e) {
         // Record the error in WHMCS's module log.
         logModuleCall(
