@@ -299,74 +299,41 @@ function bbproxmox_ChangePackage(array $params)
     return 'error';
 }
 
-
+// Done
 function bbproxmox_TestConnection(array $params)
 {
 	$serverip = $params['serverip'];
 	$serverusername = $params['serverusername'];
 	$serverpassword = $params['serverpassword'];
 	try {
-        	// Call the service's connection test function.
         	# You can try/catch exception handle the constructor here if you want.
 		$pve2 = new PVE2_API($serverip, $serverusername, "pam", $serverpassword);
 		# realm above can be pve, pam or any other realm available.
-
-		/* Optional - enable debugging. It print()'s any results currently */
-		//$pve2->set_debug(true);
-
 		if ($pve2->login()) {
-
-//			$this_nodes1 = $pve2->get("/nodes");
-//	            	$this_nodes2 = $this_nodes1['0'];
-  //      	 	$this_node = $this_nodes2['node'];
-    //         		print_r("This is node ".$this_node." Other nodes in this cluster\n");
-//
-//			foreach ($pve2->get_node_list() as $node_name) {
-//				print(", node=".$node_name);
-				//print_r($pve2->get("/nodes/".$node_name."/status"));
-//				$success = true;
-//				$errorMsg = '';
-//			}
-                                $success = true;
-                                $errorMsg = '';
-
+			$success = true;
+			$errorMsg = '';
 		} else {
-//			print("Login to Proxmox Host failed. (Bad host/user/pass?)\n");
-//			exit;
 			$success = false;
 			$errorMsg = 'Login to Proxmox Host failed. (Bad host/user/pass?)';
 		}
-
-    } catch (Exception $e) {
-        // Record the error in WHMCS's module log.
-        logModuleCall(
-            'bbproxmoxmodule',
-            __FUNCTION__,
-            $params,
-            $e->getMessage(),
-            $e->getTraceAsString()
+	} catch (Exception $e) {
+        	logModuleCall(
+            	'bbproxmoxmodule',
+            	__FUNCTION__,
+            	$params,
+            	$e->getMessage(),
+            	$e->getTraceAsString()
         );
-
         $success = false;
         $errorMsg = $e->getMessage();
-    }
-
-    return array(
-        'success' => $success,
-        'error' => $errorMsg,
-    );
+    	}
+    	return array(
+        	'success' => $success,
+        	'error' => $errorMsg,
+    	);
 }
 
-/**
- * Additional actions an admin user can invoke.
- *
- * Define additional actions that an admin user can perform for an
- * instance of a product/service.
- *
- * @see bbproxmoxmodule_buttonOneFunction()
- *
- * @return array
- */
+//Done
 function bbproxmox_AdminCustomButtonArray()
 {
     return array(
@@ -381,8 +348,7 @@ function bbproxmox_AdminCustomButtonArray()
     );
 }
 
-
-
+//Done
 function bbproxmox_Start(array $params)
 {
 	$customfields = $params["customfields"];
@@ -399,6 +365,7 @@ function bbproxmox_Start(array $params)
 	return "ERROR end of line?";
 };
 
+//Done
 function bbproxmox_Stop(array $params)
 {
         $customfields = $params["customfields"];
@@ -414,6 +381,8 @@ function bbproxmox_Stop(array $params)
         return $docmd;
         return "ERROR end of line?";
 };
+
+//Done
 function bbproxmox_Shutdown(array $params)
 {
         $customfields = $params["customfields"];
@@ -429,6 +398,8 @@ function bbproxmox_Shutdown(array $params)
         return $docmd;
         return "ERROR end of line?";
 };
+
+//Done
 function bbproxmox_Suspend(array $params)
 {
         $customfields = $params["customfields"];
@@ -444,6 +415,8 @@ function bbproxmox_Suspend(array $params)
         return $docmd;
         return "ERROR end of line?";
 };
+
+//Done
 function bbproxmox_Resume(array $params)
 {
         $DocmdR = array();
@@ -459,6 +432,7 @@ function bbproxmox_Resume(array $params)
         return "ERROR end of line?";
 };
 
+//Done
 function bbproxmox_Restart(array $params)
 {
         $DocmdR = array();
@@ -499,81 +473,13 @@ function bbproxmox_Restart(array $params)
 function bbproxmox_ClientAreaCustomButtonArray()
 {
     return array(
-        "Action 1 Display Value" => "actionOneFunction",
-        "Action 2 Display Value" => "actionTwoFunction",
+         "Start Server" => "Start",
+         "Stop Server" => "Stop",
+         "Shutdown Server" => "Shutdown",
+         "Suspend Server" => "Suspend",
+         "Resume Server" => "Resume",
+         "Restart Server" => "Restart",
     );
-}
-
-/**
- * Custom function for performing an additional action.
- *
- * You can define an unlimited number of custom functions in this way.
- *
- * Similar to all other module call functions, they should either return
- * 'success' or an error message to be displayed.
- *
- * @param array $params common module parameters
- *
- * @see http://docs.whmcs.com/Provisioning_Module_SDK_Parameters
- * @see provisioningmodule_AdminCustomButtonArray()
- *
- * @return string "success" or an error message
- */
-function bbproxmox_buttonOneFunction(array $params)
-{
-    try {
-        // Call the service's function, using the values provided by WHMCS in
-        // `$params`.
-    } catch (Exception $e) {
-        // Record the error in WHMCS's module log.
-        logModuleCall(
-            'bbproxmoxmodule',
-            __FUNCTION__,
-            $params,
-            $e->getMessage(),
-            $e->getTraceAsString()
-        );
-
-        return $e->getMessage();
-    }
-
-    return 'success';
-}
-
-/**
- * Custom function for performing an additional action.
- *
- * You can define an unlimited number of custom functions in this way.
- *
- * Similar to all other module call functions, they should either return
- * 'success' or an error message to be displayed.
- *
- * @param array $params common module parameters
- *
- * @see http://docs.whmcs.com/Provisioning_Module_SDK_Parameters
- * @see provisioningmodule_ClientAreaCustomButtonArray()
- *
- * @return string "success" or an error message
- */
-function bbproxmox_actionOneFunction(array $params)
-{
-    try {
-        // Call the service's function, using the values provided by WHMCS in
-        // `$params`.
-    } catch (Exception $e) {
-        // Record the error in WHMCS's module log.
-        logModuleCall(
-            'bbproxmoxmodule',
-            __FUNCTION__,
-            $params,
-            $e->getMessage(),
-            $e->getTraceAsString()
-        );
-
-        return $e->getMessage();
-    }
-
-    return 'success';
 }
 
 /**
