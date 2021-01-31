@@ -123,6 +123,8 @@ function bbproxmox_SuspendAccount(array $params)
     try {
         // Call the service's suspend function, using the values provided by
         // WHMCS in `$params`.
+	bbproxmox_Stop($params);
+	//TODO add code here for users account...
     } catch (Exception $e) {
         // Record the error in WHMCS's module log.
         logModuleCall(
@@ -157,6 +159,9 @@ function bbproxmox_UnsuspendAccount(array $params)
     try {
         // Call the service's unsuspend function, using the values provided by
         // WHMCS in `$params`.
+
+	//TODO add code here for users account...
+
     } catch (Exception $e) {
         // Record the error in WHMCS's module log.
         logModuleCall(
@@ -190,6 +195,10 @@ function bbproxmox_TerminateAccount(array $params)
     try {
         // Call the service's terminate function, using the values provided by
         // WHMCS in `$params`.
+
+	 bbproxmox_Stop($params); //i personly dont trust the server to remove things so lets just make sure to  stop the vps for now.
+        //TODO add code here for users account...
+
     } catch (Exception $e) {
         // Record the error in WHMCS's module log.
         logModuleCall(
@@ -283,6 +292,12 @@ function bbproxmox_ChangePackage(array $params)
         //     'configoption3' => 'Whether or not to enable FTP',
         // )
         // ```
+	 logModuleCall(
+            'bbproxmoxmodule',
+            __FUNCTION__,
+            $params,
+	$null
+);
     } catch (Exception $e) {
         // Record the error in WHMCS's module log.
         logModuleCall(
@@ -419,7 +434,8 @@ function bbproxmox_Suspend(array $params)
 //Done
 function bbproxmox_Resume(array $params)
 {
-        $DocmdR = array();
+        $customfields = $params["customfields"];
+	$DocmdR = array();
         $DocmdR["serverip"] = $params["serverip"];
         $DocmdR["realm"] = "pam";
         $DocmdR["serverusername"] = $params["serverusername"];
@@ -435,7 +451,8 @@ function bbproxmox_Resume(array $params)
 //Done
 function bbproxmox_Restart(array $params)
 {
-        $DocmdR = array();
+        $customfields = $params["customfields"];
+	$DocmdR = array();
         $DocmdR["serverip"] = $params["serverip"];
         $DocmdR["realm"] = "pam";
         $DocmdR["serverusername"] = $params["serverusername"];
@@ -444,6 +461,7 @@ function bbproxmox_Restart(array $params)
         $DocmdR['vmtype'] = $customfields['vmtype'];
         $DocmdR['state'] = "stop";
         $docmd = bbproxmox_ChState($DocmdR);
+	sleep(5);
         $DocmdR['state'] = "start";
         $docmd = bbproxmox_ChState($DocmdR);
         return $docmd;
@@ -476,8 +494,8 @@ function bbproxmox_ClientAreaCustomButtonArray()
          "Start Server" => "Start",
          "Stop Server" => "Stop",
          "Shutdown Server" => "Shutdown",
-         "Suspend Server" => "Suspend",
-         "Resume Server" => "Resume",
+//         "Suspend Server" => "Suspend",
+//         "Resume Server" => "Resume",
          "Restart Server" => "Restart",
     );
 }
@@ -500,14 +518,30 @@ function bbproxmox_ClientAreaCustomButtonArray()
  */
 function bbproxmox_AdminServicesTabFields(array $params)
 {
+
+	//gee so much to do here......... HELP!
     try {
+        $customfields = $params["customfields"];
+        $DocmdR = array();
+        $DocmdR["serverip"] = $params["serverip"];
+        $DocmdR["realm"] = "pam";
+        $DocmdR["serverusername"] = $params["serverusername"];
+        $DocmdR["serverpassword"] = $params["serverpassword"];
+        $DocmdR['vmid'] = $customfields['vmid'];
+        $DocmdR['vmtype'] = $customfields['vmtype'];
+        $DocmdR['state'] = "current";
+        $docmd = bbproxmox_ReadState($DocmdR);
+	$arraydata = implode(',',$docmd);
+	$VMname = $docmd['name'];
+	error_log("----------------------------!!!!! $arraydata !!!!!!!!");
+	 error_log("---------------------!---!-!- $VMname ");
         // Call the service's function, using the values provided by WHMCS in
         // `$params`.
         $response = array();
 
         // Return an array based on the function's response.
         return array(
-            'Number of Apples' => (int) $response['numApples'],
+            'Number of Apples' => $docmd['name'],
             'Number of Oranges' => (int) $response['numOranges'],
             'Last Access Date' => date("Y-m-d H:i:s", $response['lastLoginTimestamp']),
             'Something Editable' => '<input type="hidden" name="bbproxmoxmodule_original_uniquefieldname" '
